@@ -466,7 +466,7 @@ ggplot(effects, aes(x=model))+
 ```
 Which scale do you think represents the critical or characteristic scale at which forest cover affects skink presence? Is this scale clearly better than the others, or is there some ambiguity? What are some mechanisms by which forest cover could affect skink presence at this scale? What is your overall conclusion regarding how forest cover affects skink presence (i.e., take a look at the betas)?**
 
-I could not run the aictab (could not get the package to properly load), but based on everything else ran, I can infer that forest cover likely affects skink presence and that the 5 km scale is probably the best scale to run for infering skink presence. However, this scale is not clearly better than the 3 km or 4 km scales. 
+The AICc table shows that the 2 km scale is the most optimal model and that the 100 m and Null models are the least optimal model. However, this scale marginally better than the 4, 3, and 5 km models. Especially the 4 km model whihc is almost as good as the 2 km model.  
 
 The betas suggest that presence of forest cover is more important for the 2 km, 3 km, 4 km, and 5 km scales. This suggests that skinks want available forests  cover but that they can be found outside of this land cover and are likely utilizing other land cover types.
 
