@@ -14,6 +14,135 @@ require(tidyterra)
 require(landscapemetrics)
 ```
 
+```{r}
+studyArea = st_read('/vsicurl/https://github.com/ValenteJJ/SpatialEcology/raw/main/Week4/studyArea.shp')
+nlcd = get_nlcd(studyArea, label='AlLandscape', year=2011)
+
+# values(nlcd) = as.character(values(nlcd))
+
+plot(nlcd)
+```
+
+```{r}
+
+nlcdSimple = nlcd
+nlcdSimple[nlcdSimple==11] = 1 #Wet areas are a 1 now
+nlcdSimple[nlcdSimple %in% c(21, 22, 23, 24)] = 2 #All developed areas are 2
+nlcdSimple[nlcdSimple %in% c(31, 52)] = 3 #Barren land and shrub/scrub are 3
+nlcdSimple[nlcdSimple %in% c(41,42,43)] = 4 #All forest types are 4
+nlcdSimple[nlcdSimple == 71] = 5 #Grassland is 5
+nlcdSimple[nlcdSimple %in% c(81,82)] = 6 #And agriculture is 6
+
+#Give these numbers category names
+tmp = data.frame('ID' = c(1, 2, 3, 4, 5, 6),
+                 'category' = c('wetland', 'developed', 'open', 'forest', 'grassland', 'agriculture'))
+nlcdSimple = categories(nlcdSimple, value=tmp)
+
+#And plot the new raster
+ggplot(nlcdSimple, aes(x=x, y=y, fill=category)) +
+  geom_raster()+
+  scale_fill_manual(values=c('blue', 'black', 'gray', 'darkolivegreen', 'orange', 'yellow'))
+```
+As always, if we want to look at characteristics of this raster, we can do so
+
+```{r}
+res(nlcdSimple)
+ext(nlcdSimple)
+levels(nlcdSimple)
+```
+
+```{r}
+
+forest = nlcdSimple %>% 
+  setValues(NA)
+  
+forest[nlcdSimple ==4] = 1
+
+plot(forest)
+
+```
+
+
+```{r}
+forestPatchId = patches(forest, directions=8, zeroAsNA=T, allowGaps=F)
+
+plot(forestPatchId)
+```
+
+## Challenge 1 (4 points)
+
+**The landscapemetrics package has functions for calculating 12 patch-level metrics. Calculate all 12 of these for every forest patch in our nlcdSimple raster (using the 8-direction rule). This will result in 12 unique values associated with each forest patch. Use the chart.Correlation() function from the PerformanceAnalytics package to examine the correlation among all 12 of these variables. What patterns do you notice, and what do they tell you about the uniqueness or redundancy of the patch-level metrics you calculated?**
+
+```{r}
+#First metric - total area
+patchArea = lsm_p_area(forest, directions=8)
+
+patchArea
+
+#Second metric - core area
+patchCore = lsm_p_core(forest, directions=8)
+
+patchCore
+
+#Third metric - core area index
+patchCai = lsm_p_cai(forest, directions=8)
+
+patchCai
+
+#Fourth metric - euclidean nearest neighbor distance
+patchEnn = lsm_p_enn(forest, directions=8)
+
+patchEnn
+
+#Fifth metric - contiguity index
+patchCont = lsm_p_contig(forest, directions=8)
+
+patchCont
+
+#Sixth metric - perimeter 
+patchPerim = lsm_p_perim(forest, directions=8)
+
+patchPerim
+
+#Seventh metric - perimeter to area ratio 
+patchPara = lsm_p_para(forest, directions=8)
+
+patchPara
+
+#Eighth metric - related circumscribing circle 
+
+patchCircle = lsm_p_circle(forest, directions=8)
+
+patchCircle
+
+#Ninth metric - fractal dimension index
+ patchFrac = lsm_p_frac(forest, directions=8)
+ 
+ patchFrac
+ 
+#Tenth metric - radius of gyration  
+  patchGy = lsm_p_gyrate(forest, directions=8)
+  
+  patchGy
+  
+# Eleventh metric - shape index
+   patchShp = lsm_p_shape(forest, directions=8)
+   
+   patchShp 
+   
+#Twelth metric - number of core areas
+   patchNcore = lsm_p_ncore(forest, directions=8)
+   
+   patchNcore
+   
+PerformanceAnalytics::chart.Correlation()
+
+```
+
+
+```{r}
+# Place your R code for this challenge here.
+```
 
 
 ```{r setup, include=FALSE}
