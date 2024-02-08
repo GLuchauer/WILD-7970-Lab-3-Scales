@@ -136,19 +136,21 @@ patchCircle
    
 
 ```
-PerformanceAnalytics::chart.Correlation( 
-  R, 
-  histogram = TRUE,
-  method = c("patchArea", "patchCai", "patchCore","patchEnn", "patchCont", "patchPerim", "patchPara", "patchCircle", "patchFrac", "patchGy", "patchShp", "patchNcore" ))
 
 
 ```{r}
-forest%>% 
-  as.data.frame() %>% 
-  select(all_of(patchArea), patchCai, patchCircle, patchCont, patchCore, patchEnn, patchFrac, patchGy, patchNcore, patchPara, patchPerim, patchShp)) %>% 
-  PerformanceAnalytics::chart.Correlation(histogram=F)
+df = rbind(patchArea, patchCore, patchCai, patchEnn, patchCont, patchPerim, patchPara, patchCircle, patchFrac, patchGy, patchShp, patchNcore)
+
+df2 = pivot_wider(df,names_from = metric, values_from = value)
+df3 = df2 %>% select(patchArea:patchNcore)
+
+
+PerformanceAnalytics::chart.Correlation(df3)
+
 ```
 *What patterns do you notice, and what do they tell you about the uniqueness or redundancy of the patch-level metrics you calculated?*
+
+Patch values are very tied to characteristics of each patch, which can vary alot. Small patches lack core areas, areas of gyration, and continguity. Many patches have a nearest-neighbor distance of 60 m. Several metrics measure similar characteristics such as core area to core area index and area, perimeter, and area to perimeter ratio. I think all of these metrics are valuable for studying the ecology of particular organisms, but they might not be used in the same analysis due to the redundancy. 
 
 
 ## Challenge 2 (4 points)
@@ -233,28 +235,38 @@ I think that using the rook rule better applies to species with that require lar
 studyArea = st_read('/vsicurl/https://github.com/ValenteJJ/SpatialEcology/raw/main/Week4/studyArea.shp')
 nlcd2001 = get_nlcd(studyArea, label='Landscape01', year=2001)
 
-values(nlcd2001) = as.character(values(nlcd2001))
+# values(nlcd2001) = as.character(values(nlcd2001))
 
 plot(nlcd2001)
 
 ```
 
 ```{r}
-nlcdSimple1 = nlcd2001
-nlcdSimple1[nlcdSimple1==11] = 1 #Wet areas are a 1 now
-nlcdSimple1[nlcdSimple1 %in% c(21, 22, 23, 24)] = 2 #All developed areas are 2
-nlcdSimple1[nlcdSimple1 %in% c(31, 52)] = 3 #Barren land and shrub/scrub are 3
-nlcdSimple1[nlcdSimple1 %in% c(41,42,43)] = 4 #All forest types are 4
-nlcdSimple1[nlcdSimple1 == 71] = 5 #Grassland is 5
-nlcdSimple1[nlcdSimple1 %in% c(81,82)] = 6 #And agriculture is 6
+nlcdSimpleA = nlcd2001
+
+plot(nlcdSimpleA)
+
+sum(nlcd2001[nlcd2001==11])
+
+nlcdSimpleA[nlcdSimpleA== 11] = 1 #Wet areas are a 1 now
+
+plot(nlcdSimpleA)
+
+
+
+nlcdSimpleA[nlcdSimpleA %in% c(21, 22, 23)] = 2 #All developed areas are 2
+nlcdSimpleA[nlcdSimpleA== 52] = 3 #Barren land and shrub/scrub are 3
+nlcdSimpleA[nlcdSimpleA %in% c(41, 42, 43)] = 4 #All forest types are 4
+nlcdSimpleA[nlcdSimpleA == 71] = 5 #Grassland is 5
+nlcdSimpleA[nlcdSimpleA %in% c(81, 82)] = 6 #And agriculture is 6
 
 #Give these numbers category names
 tmp = data.frame('ID' = c(1, 2, 3, 4, 5, 6),
                  'category' = c('wetland', 'developed', 'open', 'forest', 'grassland', 'agriculture'))
-nlcdSimple1 = categories(nlcdSimple1, value=tmp)
+nlcdSimpleA = categories(nlcdSimpleA, value=tmp)
 
 #And plot the new raster
-ggplot(nlcdSimple1, aes(x=x, y=y, fill=category)) +
+ggplot(nlcdSimpleA, aes(x=x, y=y, fill=category)) +
   geom_raster()+
   scale_fill_manual(values=c('blue', 'black', 'gray', 'darkolivegreen', 'orange', 'yellow'))
 ```
@@ -264,32 +276,33 @@ ggplot(nlcdSimple1, aes(x=x, y=y, fill=category)) +
 studyArea = st_read('/vsicurl/https://github.com/ValenteJJ/SpatialEcology/raw/main/Week4/studyArea.shp')
 nlcd2019 = get_nlcd(studyArea, label='Landscape19', year=2019)
 
-values(nlcd2019) = as.character(values(nlcd2019))
+#values(nlcd2019) = as.character(values(nlcd2019))
 
 plot(nlcd2019)
 ```
 
 ```{r}
-nlcdSimple2 = nlcd2019
-nlcdSimple2[nlcdSimple2==11] = 1 #Wet areas are a 1 now
-nlcdSimple2[nlcdSimple2 %in% c(21, 22, 23, 24)] = 2 #All developed areas are 2
-nlcdSimple2[nlcdSimple2 %in% c(31, 52)] = 3 #Barren land and shrub/scrub are 3
-nlcdSimple2[nlcdSimple2 %in% c(41,42,43)] = 4 #All forest types are 4
-nlcdSimple2[nlcdSimple2 == 71] = 5 #Grassland is 5
-nlcdSimple2[nlcdSimple2 %in% c(81,82)] = 6 #And agriculture is 6
+nlcdSimpleB = nlcd2019
+nlcdSimpleB[nlcdSimpleB==11] = 1 #Wet areas are a 1 now
+nlcdSimpleB[nlcdSimpleB %in% c(21, 22, 23, 24)] = 2 #All developed areas are 2
+nlcdSimpleB[nlcdSimpleB %in% c(31, 52)] = 3 #Barren land and shrub/scrub are 3
+nlcdSimpleB[nlcdSimpleB %in% c(41,42,43)] = 4 #All forest types are 4
+nlcdSimpleB[nlcdSimpleB == 71] = 5 #Grassland is 5
+nlcdSimpleB[nlcdSimpleB %in% c(81,82)] = 6 #And agriculture is 6
 
 #Give these numbers category names
 tmp = data.frame('ID' = c(1, 2, 3, 4, 5, 6),
                  'category' = c('wetland', 'developed', 'open', 'forest', 'grassland', 'agriculture'))
-nlcdSimple2 = categories(nlcdSimple2, value=tmp)
+nlcdSimpleB = categories(nlcdSimpleB, value=tmp)
 
 #And plot the new raster
-ggplot(nlcdSimple2, aes(x=x, y=y, fill=category)) +
+ggplot(nlcdSimpleB, aes(x=x, y=y, fill=category)) +
   geom_raster()+
   scale_fill_manual(values=c('blue', 'black', 'gray', 'darkolivegreen', 'orange', 'yellow'))
 ```
 **What are some of the initial changes you notice between 2001 and 2019?**
 
+The 2019 area map has less forest and more grassland, agriculture, and open space compared to the 2001 area map.  
 
 **Quantify this at the class level by calculating and reporting the changes in (1) the total amount of each land cover type (2) mean patch size for each land cover type, and (3) mean nearest neighbor distance for each cover type between the years 2011 and 2019.** 
 ```{r}
@@ -299,7 +312,7 @@ patchA2011 = lsm_c_ca(nlcdSimple, directions=8)%>%
 
 patchA2011
 
-patchA2019 = lsm_c_ca(nlcdSimple2, directions=8)%>% 
+patchA2019 = lsm_c_ca(nlcdSimpleB, directions=8)%>% 
   left_join(classCats, by='class')
 
 patchA2019
@@ -310,7 +323,7 @@ patchArea2011 = lsm_c_area_mn(nlcdSimple, directions=8)%>%
 
 patchArea2011
 
-patchArea2019 = lsm_c_area_mn(nlcdSimple2, directions=8)%>% 
+patchArea2019 = lsm_c_area_mn(nlcdSimpleB, directions=8)%>% 
   left_join(classCats, by='class')
 
 patchArea2019
@@ -321,22 +334,24 @@ patchE2011 = lsm_c_enn_mn(nlcdSimple, directions=8)%>%
 
 patchE2011
 
-patchE2019 = lsm_c_enn_mn(nlcdSimple2, directions=8)%>% 
+patchE2019 = lsm_c_enn_mn(nlcdSimpleB, directions=8)%>% 
   left_join(classCats, by='class')
 
 patchE2019
 
 ```
 *Give a short description of how you interpret the changes in these values.*
+total landcover areas show that the study site lost forest cover between 2011 and 2019, and it gained area in open, grassland, and agriculture. Likewise, the mean patch size for forest decreased, while mean patch sizes for open, grassland, and agriculture increased. This suggests an increase in anthropogenic usage. Forests may have been lost through logging or natural disturbance. This space was then replaced with landcover that grows back quickly. 
 
+Mean nearest-neighbor distance increased for open, forest, and agriculture. It only decreased for grassland. Along with mean patch size, this means that open, grassland, and agriculture are larger patches. The increase in grassland nearest-neighbor distance could be due to restoration efforts or simply grasses filling suitable open spaces.
 
 
 **Quantify these changes at the landscape level by calculating and reporting on changes in the (1) Shannon diversity and (2) Shannon evenness of the landscapes at the different time points.**
 ```{r}
 #2001 
-lsm_l_shdi(nlcdSimple1)
+lsm_l_shdi(nlcdSimpleA)
 
-lsm_l_shei(nlcdSimple1)
+lsm_l_shei(nlcdSimpleA)
 
 #2011
 lsm_l_shdi(nlcdSimple)
@@ -344,12 +359,15 @@ lsm_l_shdi(nlcdSimple)
 lsm_l_shei(nlcdSimple)
 
 #2019
-lsm_l_shdi(nlcdSimple2)
+lsm_l_shdi(nlcdSimpleB)
 
-lsm_l_shei(nlcdSimple2)
+lsm_l_shei(nlcdSimpleB)
 
 ```
 *Give a short description of how you interpret the changes in these values.*
+
+Shannon diversity decreased a little bit between 2001 and 2011 but then increased between 2011 and 2019. This means that the landscape diversity decreased between 2001 and 2011 but then increased between 2011 and 2019.  Shannon eveness increased between 2001 and 2011, but decreased between 2011 and 2019. This means that landcover type distribution became more similar over the area from 2001 to 2011 and less similar from 2011 to 2019. Changes from 2001 to 2011 are likely due to increased forest cover and distribution, while changes from 2011 to 2019 could be due to natural disturbance or logging that breaks up forest cover, but mostly removes particular patches.
+
 
 
 ## Challenge 4 (4 points)
@@ -406,7 +424,7 @@ plot(voss30)
 
 # 20% cover
 threshold20 = quantile(as.matrix(vossModel), prob=0.2)
-voss20 = ifel(vossModel > threshold80, 0, 1)
+voss20 = ifel(vossModel > threshold20, 0, 1)
 plot(voss20)
 
 # 10% cover
@@ -417,6 +435,326 @@ plot(voss10)
 ```
 *comment on what patterns you see changing as the value increases from a 10% cover to 90% cover*
 
+When comparing the patterns to the model, the landcover starts from the lowest values and expanding into increasing values as the percentage increases. This means that the lowest values are most favorable for presence of the landcover type.  
+
+**Identify 3 class-level or landscape-level metrics that help you capture the changes you are observing. Calculate those metrics for each of the 9 landscapes and plot them (x-axis is threshold value and y-axis is calculated metric). .**
+```{r}
+#90% 
+ai90 = lsm_c_ai(voss90)
+ai90
+
+coremn90 = lsm_l_core_mn(voss90)
+coremn90
+
+edge90 = lsm_l_te(voss90)
+edge90
+
+#80%
+ai80 = lsm_c_ai(voss80)
+ai80
+
+coremn80 = lsm_l_core_mn(voss80)
+coremn80
+
+edge80 = lsm_l_te(voss80)
+edge80
+
+#70%
+ai70 = lsm_c_ai(voss70)
+ai70
+
+coremn70 = lsm_l_core_mn(voss70)
+coremn70
+
+edge70 = lsm_l_te(voss70)
+edge70
+
+#60%
+ai60 = lsm_c_ai(voss60)
+ai60
+
+coremn60 = lsm_l_core_mn(voss60)
+coremn60
+
+edge60 = lsm_l_te(voss60)
+edge60
+
+#50%
+ai50 = lsm_c_ai(voss50)
+ai50
+
+coremn50 = lsm_l_core_mn(voss50)
+coremn50
+
+edge50 = lsm_l_te(voss50)
+edge50
+
+#40%
+ai40 = lsm_c_ai(voss40)
+ai40
+
+coremn40 = lsm_l_core_mn(voss40)
+coremn40
+
+edge40 = lsm_l_te(voss40)
+edge40
+
+#30%
+ai30 = lsm_c_ai(voss30)
+ai30
+
+coremn30 = lsm_l_core_mn(voss30)
+coremn30
+
+edge30 = lsm_l_te(voss30)
+edge30
+
+#20%
+ai20 = lsm_c_ai(voss20)
+ai20
+
+coremn20 = lsm_l_core_mn(voss20)
+coremn20
+
+edge20 = lsm_l_te(voss20)
+edge20
+
+#10%
+ai10 = lsm_c_ai(voss10)
+ai10
+
+coremn10 = lsm_l_core_mn(voss10)
+coremn10
+
+edge10 = lsm_l_te(voss10)
+edge10
+
+
+```
+```{r}
+Scaterpl = read.csv('https://raw.githubusercontent.com/GLuchauer/WILD-7970-Labs/main/Part4.csv')
+head(Scaterpl)
+
+#plot(Y~X,data=datum4)
+#results=lm(Y~X,data=datum4)
+#abline(results)
+plot(Aggregate_Index~Percent,data=Scaterpl)
+plot(Mean_Core_Area~Percent,data=Scaterpl)
+plot(Total_Landscape_Edge~Percent,data=Scaterpl)
+```
+*Briefly describe why you chose these 3 metrics and how they change with increasing cover*
+
+I chose class aggregation index, landscape mean core area, and total landscape edge to show changes in the model with increased landcover. Class 1 Aggregation increases while class 0 decreases with increased percent landcover. I picked aggregation index in particular to show transformation from one landcover type to another. I picked landscape mean core area because I thought it would increase with increased percent landcover. However mean core area often decreased until the higher percent landcovers (80%+). This is likely due to the increasing number of new small core areas. I picked total edge because I thought it would increase and then decrease at higher percent landcover. It is at its highest at 50% cover and decreases with both increasing and decreasing percent landcover.
 
 
 
+## Challenge 5 (4 points)
+
+**Use the voss2d() function to simulate 9 surfaces. In each one, g should be 7, but vary the value of H from 0.1 to 0.9. Create a unique landscape from each of these with a threshold value of 30% cover. Again, the 1 values can represent anything you desire, and again I suggest you set the seed for your simulation value so that you get the same outcome each time you run the code. Plot these landscapes.**
+
+```{r}
+set.seed(23)
+#90%
+vossModel9 = voss2d(g=7, H=0.9)
+vossModel9 = rast(vossModel9$z)
+
+plot(vossModel9)
+
+threshold309 = quantile(as.matrix(vossModel9), prob=0.3)
+H309 = ifel(vossModel9 > threshold309, 0, 1)
+plot(H309)
+
+#80%
+vossModel8 = voss2d(g=7, H=0.8)
+vossModel8 = rast(vossModel8$z)
+
+plot(vossModel8)
+
+threshold308 = quantile(as.matrix(vossModel8), prob=0.3)
+H308 = ifel(vossModel8 > threshold308, 0, 1)
+plot(H308)
+
+#70%
+vossModel7 = voss2d(g=7, H=0.7)
+vossModel7 = rast(vossModel7$z)
+
+plot(vossModel7)
+
+threshold307 = quantile(as.matrix(vossModel7), prob=0.3)
+H307 = ifel(vossModel7 > threshold307, 0, 1)
+plot(H307)
+
+#60%
+vossModel6 = voss2d(g=7, H=0.6)
+vossModel6 = rast(vossModel6$z)
+
+plot(vossModel6)
+
+threshold306 = quantile(as.matrix(vossModel6), prob=0.3)
+H306 = ifel(vossModel6 > threshold306, 0, 1)
+plot(H306)
+
+#50%
+vossModel5 = voss2d(g=7, H=0.5)
+vossModel5 = rast(vossModel5$z)
+
+plot(vossModel5)
+
+threshold305 = quantile(as.matrix(vossModel5), prob=0.3)
+H305 = ifel(vossModel5 > threshold305, 0, 1)
+plot(H305)
+
+#40%
+vossModel4 = voss2d(g=7, H=0.4)
+vossModel4 = rast(vossModel4$z)
+
+plot(vossModel4)
+
+threshold304 = quantile(as.matrix(vossModel4), prob=0.3)
+H304 = ifel(vossModel4 > threshold304, 0, 1)
+plot(H304)
+
+#30% 
+vossModel3 = voss2d(g=7, H=0.3)
+vossModel3 = rast(vossModel3$z)
+
+plot(vossModel3)
+
+threshold303 = quantile(as.matrix(vossModel3), prob=0.3)
+H303 = ifel(vossModel3 > threshold303, 0, 1)
+plot(H303)
+
+#20%
+vossModel2 = voss2d(g=7, H=0.2)
+vossModel2 = rast(vossModel2$z)
+
+plot(vossModel2)
+
+threshold302 = quantile(as.matrix(vossModel2), prob=0.3)
+H302 = ifel(vossModel2 > threshold302, 0, 1)
+plot(H302)
+
+#10%
+vossModel1 = voss2d(g=7, H=0.1)
+vossModel1 = rast(vossModel1$z)
+
+plot(vossModel1)
+
+threshold301 = quantile(as.matrix(vossModel1), prob=0.3)
+H301 = ifel(vossModel1 > threshold301, 0, 1)
+plot(H301)
+
+```
+ *comment on what patterns you see changing as the H value increases from 0.1 to 0.9*
+ 
+ As the value of H increases from 0.1 to 0.9,landcover becomes more clumped and less dispersed within the other landcover type. Patches become more defined, which likely increases core area and decreases Shannon eveness. 
+ 
+**Identify 3 class-level or landscape-level metrics that help you capture the changes you are observing. THESE MUST BE DIFFERENT THAN THOSE METRICS YOU USED IN CHALLENGE 2. Calculate those metrics for each of the 9 landscapes and plot them (x-axis is H-value and y-axis is calculated metric).**
+
+```{r}
+#H = 0.9 
+clump9 = lsm_c_clumpy(H309)
+clump9
+
+core9 = lsm_l_core_cv(H309)
+core9
+
+ndca9 = lsm_l_ndca(H309)
+ndca9
+
+#H = 0.8
+clump8 = lsm_c_clumpy(H308)
+clump8
+
+core8 = lsm_l_core_cv(H308)
+core8
+
+ndca8 = lsm_l_ndca(H308)
+ndca8
+
+#H = 0.7
+clump7 = lsm_c_clumpy(H307)
+clump7
+
+core7 = lsm_l_core_cv(H307)
+core7
+
+ndca7 = lsm_l_ndca(H307)
+ndca7
+
+#H = 0.6
+clump6 = lsm_c_clumpy(H306)
+clump6
+
+core6 = lsm_l_core_cv(H306)
+core6
+
+ndca6 = lsm_l_ndca(H306)
+ndca6
+
+#H = 0.5
+clump5 = lsm_c_clumpy(H305)
+clump5
+
+core5 = lsm_l_core_cv(H305)
+core5
+
+ndca5 = lsm_l_ndca(H305)
+ndca5
+
+#H = 0.4
+clump4 = lsm_c_clumpy(H304)
+clump4
+
+core4 = lsm_l_core_cv(H304)
+core4
+
+ndca4 = lsm_l_ndca(H304)
+ndca4
+
+#H = 0.3
+clump3 = lsm_c_clumpy(H303)
+clump3
+
+core3 = lsm_l_core_cv(H303)
+core3
+
+ndca3 = lsm_l_ndca(H303)
+ndca3
+
+#H = 0.2
+clump2 = lsm_c_clumpy(H302)
+clump2
+
+core2 = lsm_l_core_cv(H302)
+core2
+
+ndca2 = lsm_l_ndca(H302)
+ndca2
+
+#10%
+clump1 = lsm_c_clumpy(H301)
+clump1
+
+core1 = lsm_l_core_cv(H301)
+core1
+
+ndca1 = lsm_l_ndca(H301)
+ndca1
+lsm_l_nd
+
+```
+```{r}
+Scaterpll = read.csv('https://raw.githubusercontent.com/GLuchauer/WILD-7970-Labs/main/Part5.csv')
+head(Scaterpll)
+
+#plot(Y~X,data=datum4)
+#results=lm(Y~X,data=datum4)
+#abline(results)
+plot(Clumpiness~H,data=Scaterpll)
+plot(Core_Area~H,data=Scaterpll)
+plot(Num_Disjunct_Core_Areas~H,data=Scaterpll)
+```
+*Briefly describe why you chose these 3 metrics and how they change with increasing cover.*
+
+I chose clumpiness index due to the visual appearance of increasing clumpiness with increasing H in the previous section of this assignment. Generally, the clumpiness increases with increasing H. Landscape total core area was selected because I thought it would increase with increasing H. However, total core area generally decreased. This is likely due to increased edge area compared to increased clumpiness. Number of disjunct core areas was selected due because I expect core areas to decrease with increased H due to fewer total patches. This value did decrease, likely due to both fewer patches but also due to less total core area. 
