@@ -142,7 +142,7 @@ patchCircle
 df = rbind(patchArea, patchCore, patchCai, patchEnn, patchCont, patchPerim, patchPara, patchCircle, patchFrac, patchGy, patchShp, patchNcore)
 
 df2 = pivot_wider(df,names_from = metric, values_from = value)
-df3 = df2 %>% select(patchArea:patchNcore)
+df3 = df2 %>% select(area:ncore)
 
 
 PerformanceAnalytics::chart.Correlation(df3)
@@ -151,6 +151,8 @@ PerformanceAnalytics::chart.Correlation(df3)
 *What patterns do you notice, and what do they tell you about the uniqueness or redundancy of the patch-level metrics you calculated?*
 
 Patch values are very tied to characteristics of each patch, which can vary alot. Small patches lack core areas, areas of gyration, and continguity. Many patches have a nearest-neighbor distance of 60 m. Several metrics measure similar characteristics such as core area to core area index and area, perimeter, and area to perimeter ratio. I think all of these metrics are valuable for studying the ecology of particular organisms, but they might not be used in the same analysis due to the redundancy. 
+
+$\color{red}{\text{Your code simply didn't produce the figure I was looking for, but I fixed it above. +3}}$
 
 
 ## Challenge 2 (4 points)
@@ -224,7 +226,7 @@ patchTeR
 Applying the queen or rook rule to delineate patches can affect measurements depending on what you are measuring. When looking at the class level metrics for number of patches, mean patch size, standard deviation in patch size, nearest-neighbor distance, and total edge length, only total edge length did not show any difference between using the queen and rook rules. Nearest-neighbor distance and number of patches usually increases when using the rook rule compared to using the queen rule. Standard deviation in patch size and mean patch size usually decreases when using the rook rule compared to using the queen rule. 
 I think that using the rook rule better applies to species with that require larger habitats, due to having larger body sizes, limited movement, or needing more area due to diet or territorial behavior, like mountain lions. The queen rule better applies to species with smaller body sizes, better movement, and/or higher population densities, like most passerines.
 
-
+$\color{red}{\text{Nice work. +4}}$
 
 ## Challenge 3 (4 points)
 
@@ -368,7 +370,7 @@ lsm_l_shei(nlcdSimpleB)
 
 Shannon diversity decreased a little bit between 2001 and 2011 but then increased between 2011 and 2019. This means that the landscape diversity decreased between 2001 and 2011 but then increased between 2011 and 2019.  Shannon eveness increased between 2001 and 2011, but decreased between 2011 and 2019. This means that landcover type distribution became more similar over the area from 2001 to 2011 and less similar from 2011 to 2019. Changes from 2001 to 2011 are likely due to increased forest cover and distribution, while changes from 2011 to 2019 could be due to natural disturbance or logging that breaks up forest cover, but mostly removes particular patches.
 
-
+$\color{red}{\text{Great! +4}}$
 
 ## Challenge 4 (4 points)
 
@@ -546,6 +548,7 @@ plot(Total_Landscape_Edge~Percent,data=Scaterpl)
 
 I chose class aggregation index, landscape mean core area, and total landscape edge to show changes in the model with increased landcover. Class 1 Aggregation increases while class 0 decreases with increased percent landcover. I picked aggregation index in particular to show transformation from one landcover type to another. I picked landscape mean core area because I thought it would increase with increased percent landcover. However mean core area often decreased until the higher percent landcovers (80%+). This is likely due to the increasing number of new small core areas. I picked total edge because I thought it would increase and then decrease at higher percent landcover. It is at its highest at 50% cover and decreases with both increasing and decreasing percent landcover.
 
+$\color{red}{\text{Awesome. +4}}$
 
 
 ## Challenge 5 (4 points)
@@ -741,7 +744,7 @@ core1
 
 ndca1 = lsm_l_ndca(H301)
 ndca1
-lsm_l_nd
+# lsm_l_nd
 
 ```
 ```{r}
@@ -758,3 +761,5 @@ plot(Num_Disjunct_Core_Areas~H,data=Scaterpll)
 *Briefly describe why you chose these 3 metrics and how they change with increasing cover.*
 
 I chose clumpiness index due to the visual appearance of increasing clumpiness with increasing H in the previous section of this assignment. Generally, the clumpiness increases with increasing H. Landscape total core area was selected because I thought it would increase with increasing H. However, total core area generally decreased. This is likely due to increased edge area compared to increased clumpiness. Number of disjunct core areas was selected due because I expect core areas to decrease with increased H due to fewer total patches. This value did decrease, likely due to both fewer patches but also due to less total core area. 
+
+$\color{red}{\text{Great work, Gretchen! +4}}$
