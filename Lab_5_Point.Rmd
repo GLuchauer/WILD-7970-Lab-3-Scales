@@ -1,0 +1,258 @@
+---
+title: "Lab_5_Point_Patterns"
+output: html_document
+date: "2024-02-12"
+---
+
+```{r setup}
+rm(list=ls())
+
+require(spatstat)
+require(tidyverse)
+require(terra)
+```
+
+```{r}
+
+critter1 = read.csv('https://raw.githubusercontent.com/ValenteJJ/SpatialEcology/main/Week5/species1.csv') %>% 
+  mutate(org = 'critter1')
+
+pppWindow = owin(xrange = c(0, 100), yrange = c(0, 100))
+
+pppCritter1 = ppp(x=critter1$x, y=critter1$y, window = pppWindow)
+
+plot(pppCritter1)
+plot(density(pppCritter1, 1))
+
+plot(density(pppCritter1, 0.01))
+summary(pppCritter1)
+
+```
+# Challenge 1 (3 points)
+
+Create a simulation window on a landscape stretching from 0 to 100 units in both the x and y directions. Now simulate the distribution of an organism on this landscape using a Poisson process with a lambda value of 0.01. Plot this organism's distribution.
+```{r}
+set.seed(123)
+q = quadratcount(pppCritter1, nx=100, ny=100)
+plot(pppCritter1)
+plot(q, add=T)
+
+quadrat.test(pppCritter1, nx=100, ny=100, method='Chisq')
+```
+```{r}
+ppInt = ppm(pppCritter1, ~1)
+ppXy = ppm(pppCritter1, ~ x + y)
+ppXy2 = ppm(pppCritter1, ~polynom (x, y, 2))
+
+plot(predict(ppXy2, type='trend'))
+plot(pppCritter1, add=T)
+
+set.seed(123)
+simPp = rpoispp(lambda = 0.01, nsim=1, win=q)
+plot(simPp)
+```
+
+*How many organisms are there on your landscape? What is the expected number of organisms that you should find on this landscape based on your simulation parameters? Why?*
+
+The simulation contains 93 organisms on the landscape. In poisson distributions,lambda is the mean number of events for a given interval.  Given lambda is 0.01 and that the spatial interval is 1/100 of the whole area, the expected number of organisms in the area equals the (x interval* y interval) * (lambda) which is 10000*0.01 = 100. So we would expect slightly more organisms given the spatial interval, but it is close to the expected quantity. 
+
+
+# Challenge 2 (3 points)
+
+Verify that there no linear or quadratic pattern in the distribution of your organisms using fitted Poisson process models. Show the outcome of this analysis.
+
+```{r}
+#Ripley's Group
+
+#Ripley's K - distribution analysis
+kNone = Kest(pppCritter1, correction='none')
+plot(kNone)
+
+#Ripley's L - variance normalized from Ripley K
+lNone = Lest(pppCritter1, correction='none')
+#Increases with radius
+plot(lNone)
+
+#Subtract r - correction
+plot(lNone, .-r~r)
+
+#################################################
+
+#Isotropic correction
+lIso = Lest(pppCritter1, correction = 'isotropic')
+plot(lIso, . -r~r)
+
+#Torodial shift
+lTrans = Lest(pppCritter1, correction='translate')
+plot(lTrans, .-r~r)
+
+#Poisson process
+lCsr = envelope(pppCritter1, Lest, nsim=99, rank=1, correction='translate', global=F)
+plot(lCsr, .-r~r, shade=c('hi', 'lo'), legend=F)
+
+#Pair correlation transformation 
+pTrans = pcf(pppCritter1, correction='translate')
+plot(pTrans)
+
+#Pair correlation function
+pEnv = envelope(pppCritter1, pcf, nsim=99, rank=1, correction='translate', global=F)
+plot(pEnv, shade=c('hi', 'lo'), legend=F)
+
+#Nearest neighbor transformation
+gTrans = Gest(pppCritter1, correction='rs')
+plot(gTrans, legend=F)
+
+#Nearest neighbor
+gEnv = envelope(pppCritter1, Gest, nsim=99, rank=1, correction='rs', global=F)
+plot(gEnv, shade=c('hi', 'lo'), legend=F)
+
+```
+
+*explain your conclusion.*
+
+The Ripley's K and L graphs describes the distribution of the organism by comparing the observed pattern to an expected random distribution. This graph shows that the organism has a slightly clustered distribution from 0 to 12 unit from each observation point. However, after 12 units, the distribution of the organism becomes more dispersed than expected distribution. The Poisson process CSR shows values slightly below 1 from 1 to 12 units and closer to 0 from 12 to 22 units. This suggests slight clustering from 1 to 12 units and near randomness from 12 to 22 units. Units above 22 units suggest a more regular pattern at large measurements (given correction for edge effects). The pair correlation suggests little to no clustering throughout the distribution of the organism at the study site, with g(r) near 0. Nearest-neighbor CSR analysis suggests slight clustering up to 4 unit and slight regularity above 4 units. Overall, this organism seems to have a slight clustering in distances near each observation point or small scale and has a more regular distribution when viewing the locations of this organisms on a larger scale. 
+
+
+# Challenge 3 (14 points)
+
+I have simulated the distributions of 2 critters and provided their x-y coordinates. One of them is a non-territorial predator. The second is a critter that is preyed upon by the predator and exhibits a fear response to the predator's presence. Use the tools you learned in the lab to explore the distributions of these two critters.
+
+
+```{r}
+
+predPreyWin = owin(xrange = c(0, 100), yrange = c(0, 100))
+
+critter1 = read.csv('https://raw.githubusercontent.com/ValenteJJ/SpatialEcology/main/Week5/species1.csv') %>% 
+  mutate(org = 'critter1')
+
+critter2 = read.csv('https://raw.githubusercontent.com/ValenteJJ/SpatialEcology/main/Week5/species2.csv') %>% 
+  mutate(org = 'critter2')
+
+pppCritter1 = ppp(x=critter1$x, y=critter1$y, window = predPreyWin)
+
+plot(pppCritter1)
+plot(density(pppCritter1, 1))
+
+pppCritter2 = ppp(x=critter2$x, y=critter2$y, window = predPreyWin)
+
+plot(pppCritter2)
+plot(density(pppCritter2, 1))
+```
+
+
+```{r}
+#Ripley's Group
+
+#Ripley's K - distribution analysis
+kNone1 = Kest(pppCritter1, correction='none')
+plot(kNone1)
+
+kNone2 = Kest(pppCritter2, correction='none')
+plot(kNone2)
+
+#Ripley's L - variance normalized from Ripley K
+lNone1 = Lest(pppCritter1, correction='none')
+#Increases with radius
+plot(lNone1)
+
+lNone2 = Lest(pppCritter2, correction='none')
+plot(lNone2)
+
+#Subtract r - correction
+plot(lNone1, .-r~r)
+plot(lNone2, .-r~r)
+
+
+```
+
+```{r}
+#Isotropic correction
+lIso1 = Lest(pppCritter1, correction = 'isotropic')
+plot(lIso1, . -r~r)
+
+lIsol2 = Lest(pppCritter2, correction = 'isotropic')
+plot(lIsol2, .-r~r)
+
+#Torodial shift
+lTrans1 = Lest(pppCritter1, correction='translate')
+plot(lTrans1, .-r~r)
+
+lTrans2 = Lest(pppCritter2, correction='translate')
+plot(lTrans2, .-r~r)
+
+#Poisson process
+lCsr1 = envelope(pppCritter1, Lest, nsim=99, rank=1, correction='translate', global=F)
+plot(lCsr1, .-r~r, shade=c('hi', 'lo'), legend=F)
+
+lCsr2 = envelope(pppCritter2, Lest, nsim=99, rank=1, correction='translate',global=F)
+plot(lCsr2, .-r~r, shade=c('hi', 'lo'), legend=F)
+
+
+
+```
+
+```{r}
+#Pair correlation transformation 
+pTrans1 = pcf(pppCritter1, correction='translate')
+plot(pTrans1)
+
+pTrans2 = pcf(pppCritter2, correction='translate')
+plot(pTrans2)
+
+
+#Pair correlation function
+pEnv1 = envelope(pppCritter1, pcf, nsim=99, rank=1, correction='translate', global=F)
+plot(pEnv1, shade=c('hi', 'lo'), legend=F)
+
+pEnv2 = envelope(pppCritter2, pcf, nsim=99, rank=1, correction='translate', global=F)
+plot(pEnv2, shade=c('hi', 'lo'), legend=F)
+
+
+#Nearest neighbor transformation
+gTrans1 = Gest(pppCritter1, correction='rs')
+plot(gTrans1, legend=F)
+
+gTrans2 = Gest(pppCritter2, correction='rs')
+plot(gTrans2, legend=F)
+
+#Nearest neighbor
+gEnv1 = envelope(pppCritter1, Gest, nsim=99, rank=1, correction='rs', global=F)
+plot(gEnv1, shade=c('hi', 'lo'), legend=F)
+
+gEnv2 = envelope(pppCritter2, Gest, nsim=99, rank=2, correction='rs', global=F)
+plot(gEnv2, shade=c('hi', 'lo'), legend=F)
+
+```
+*Identify which one is the predator and which is the prey, and provide code and a thorough justification supporting your conclusion. (may need to integrate additional code chunks)*
+
+By comparing the distribution measurements, I think that Critter 1 is the prey species and Critter 2 is the predator species. Critter 1 shows more clustering from 0 to 12 units in the Ripley's K and L compared to Critter 2, which has a random to very slight regular distribution. Poisson process CSRs show that Critter 1 has clustering from 1 to 12 units where Critter 2 has clustering from 7 to 17 units and Pair correlation shows Critter 2 has dispersal from 1 to 3 units, which suggests that Critter 2 require more spacing than Critter 1. Finally, Critter 2's nearest-neighbor CSR show G(r)<G(r)csr which suggest a more regular distribution. Predator species require more dispersal and regular distribution in order to each have enough prey items in their range to sustain themselves.
+
+I left the defunct coding below because it is unable to run due to a complete lack of point overlap due to Critter 1 and Critter 2. This suggests that the prey species is a motile species, since it can avoid the predator species. This also suggests slight clustering in Critter 1 could be a way for it to improve its species fitness. Predators usually take the weakest prey because they are easier to consume, which allow other members to live longer. 
+
+```{r}
+#Note that code does not work because critter1 and critter2 do not have any observational overlapping points which could suggest avoidance by one species by the other species
+
+tmp = critter1
+
+tmp$critter2 = as.factor(ifelse(tmp$critter2 > 0, 'presence', 'absence'))
+
+pppPa = ppp(tmp$x, tmp$y, window = predPreyWin, marks = tmp$critter2)
+
+split(pppPa)
+
+plot(split(pppPa))
+
+#Same as above - critter 2 has 91 points and critter 1 has 108 points. 
+tmp = critter2
+
+tmp$critter1 = as.factor(ifelse(tmp$critter1 > 0, 'presence', 'absence'))
+
+pppPa = ppp(tmp$x, tmp$y, window = predPreyWin, marks = tmp$critter1)
+
+split(pppPa)
+
+plot(split(pppPa))
+
+```
+
+
