@@ -89,6 +89,8 @@ rspDist1.2
 ```
 Commute distances tend to be the longest pathing because this function assumes random pathing using circuit theory, which expects random pathings along the areas of lowest resistance regardless of length. Euclidean distances tend to have the shortest pathings because these distances are straight-line pathing without considering any potential landscape resistance. I would expect larger differences between Euclidean distances and other pathings in ecosystems where straight-line pathings have very high resistances. Examples of this are if the straight-line path contains a barrier such as a wall or a landcover type that the study species cannot traverse such as open water for FL panthers.
 
+$\color{red}{\text{I was hoping to see you calculate this for multiple patches and look at correlation, but good work on your reasoning. +3}}$
+
 
 # Challenge 2 (5 points)
 
@@ -140,6 +142,8 @@ table(matrix(CorridorComposition))
 ```
 The most common landcover types are hardwood, hardwood swamp, dry prarie, orchard, and cropland. Both hardwood and hardwood swap share the most landcover type in the least cost corridor with 4 units each. Dry prarie, orchard, and cropland share the second most landcover in the least cost corridor with 3 units each. It makes sense that these landcover types are the most common in the least cost corridor given these landcover types are either preferred habitat types or they are landcover types that would be easier for panthers to navigate due to being drier landcover with vegetation. 
 
+$\color{red}{\text{I'm not exactly sure what went wrong here, but cypress swamp should be at the top.  Either way, good work. +4}}$
+
 
 # Challenge 3 (5 points)
 
@@ -159,6 +163,7 @@ What patterns do you see emerge as theta increases? Comment on the tradeoffs bet
 
 As theta increases, we start to see a least-cost corridor emerge. If theta continued to increase we would get a least-cost path. Although organisms do not always or often take the least-cost corridor, organism also do not likely take a completely random path either since if they can see a higher resistent path, they will likely take a visibly observable path with lower resistance (like walking through a valley instead of over a mountain). If the landscape lack much topographic diversity or changes in ecosystem, then a near random movement should be expected (like overlapping magnetic fields). Therefore, if the space and resources are available, conservation planners should try to make loose corridor spaces available for high-resistence landscapes and large-scale protected areas for low-resistence ecosystems because this is the most accurate connectivity of organisms between patches. However, this is usually not an available option to managers due to land use for urban or agriculture. This is why managers develop pathways when building connectivity. 
 
+$\color{red}{\text{Excellent. +5}}$
 
 # Challenge 4 (5 points)
 
@@ -316,3 +321,4 @@ The integral index of connectivity (iic) looks at the amount of habitat in a spa
 
 Probability of connectivity (pc) describes the probability that two random points in a landscape are reachable from one another given the habitat patch matrix and links between patches. The pc for the original kite network is 0.00595, the -6 patch pc is 0.00276, and the -7 patch pc is 0.00263. I think the decrease in pc between the original and the -6 and -7 patches are due to the lost connections and patches in these datasets. It is interesting how close -6 patch is to -7 patch given that -6 only had two connections and -7 has 12 connections. -6 patch must be important to connecting two larger networks given its larger than expected impacts. -7 also probably has redundant connections that make its presence less important than it first appears
 
+$\color{red}{\text{Good. +5}}$
